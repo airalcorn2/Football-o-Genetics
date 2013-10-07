@@ -27,341 +27,331 @@ import java.util.Scanner;
 
 public class Stats {
 
-	String gamesPath, cleanedGames, homeTeam, opponent, currentQuarter, line;
-	File[] gameFiles;
-	File cleanedGamesDirectory, rawGamesDirectory, data;
-	ArrayList<String> qbs, rbs, playCall;
-	int numberDrives;
-	Scanner scanner;
-	BufferedWriter bw;
-	FileWriter fw;
+    String gamesPath, cleanedGames, homeTeam, opponent, currentQuarter, line;
+    File[] gameFiles;
+    File cleanedGamesDirectory, rawGamesDirectory, data;
+    ArrayList<String> qbs, rbs, playCall;
+    int numberDrives;
+    Scanner scanner;
+    BufferedWriter bw;
+    FileWriter fw;
 
-	public void cleanData() {
+    public void cleanData() {
 
-		File folder = new File(gamesPath);
-		gameFiles = folder.listFiles();
+        File folder = new File(gamesPath);
+        gameFiles = folder.listFiles();
 
-		// Create directories for raw game files and cleaned game files
-		if (!gamesPath.contains("Raw Games")) {
+        String gamesParent = folder.getParent() + System.getProperty("file.separator");
 
-			String gamesParent = folder.getParent();
+        // Create directories for raw game files and cleaned game files
+        cleanedGamesDirectory = new File(gamesParent + "Cleaned Games");
+        if (!cleanedGamesDirectory.exists())
+            cleanedGamesDirectory.mkdir();
+        cleanedGames = cleanedGamesDirectory.getPath();
 
-			cleanedGamesDirectory = new File(gamesParent + "/Cleaned Games");
-			if (!cleanedGamesDirectory.exists())
-				cleanedGamesDirectory.mkdir();
-			cleanedGames = cleanedGamesDirectory.getPath();
+        if (!gamesPath.contains("Raw Games")) {
 
-			rawGamesDirectory = new File(gamesParent + "/Raw Games");
-			if (!rawGamesDirectory.exists())
-				rawGamesDirectory.mkdir();
+            rawGamesDirectory = new File(gamesParent + "Raw Games");
+            if (!rawGamesDirectory.exists())
+                rawGamesDirectory.mkdir();
 
-		} else {
+        }
 
-			String gamesParent = folder.getParent();
+        clean();
+    }
 
-			cleanedGamesDirectory = new File(gamesParent + "/Cleaned Games");
-			if (!cleanedGamesDirectory.exists())
-				cleanedGamesDirectory.mkdir();
-			cleanedGames = cleanedGamesDirectory.getPath();
+    // Remove unnecessary words, punctuation, whitespace, etc. from play-by-plays
+    public void clean() {
 
-		}
+        for (File game : gameFiles) {
 
-		clean();
+            String gameFile = game.getName();
 
-	}
+            if (gameFile.equals("Results") || gameFile.equals("Cleaned Games")
+                    || gameFile.equals("Raw Games")
+                    || gameFile.equals("InterceptionRates.csv")
+                    || gameFile.equals("FumbleRates.csv"))
+                continue;
 
-	// Remove unnecessary words, punctuation, whitespace, etc. from play-by-plays
-	public void clean() {
+            File newGameFile = new File(cleanedGamesDirectory.getPath() + System.getProperty("file.separator")
+                    + gameFile);
 
-		for (File game : gameFiles) {
+            try {
 
-			String gameFile = game.getName();
+                newGameFile.createNewFile();
 
-			if (gameFile.equals("Results") || gameFile.equals("Cleaned Games")
-					|| gameFile.equals("Raw Games")
-					|| gameFile.equals("InterceptionRates.csv")
-					|| gameFile.equals("FumbleRates.csv"))
-				continue;
+                fw = new FileWriter(newGameFile.getAbsoluteFile());
+                bw = new BufferedWriter(fw);
 
-			File newGameFile = new File(cleanedGamesDirectory.getPath() + "/"
-					+ gameFile);
+                Scanner thisScanner;
 
-			try {
+                try {
 
-				newGameFile.createNewFile();
+                    thisScanner = new Scanner(game);
 
-				fw = new FileWriter(newGameFile.getAbsoluteFile());
-				bw = new BufferedWriter(fw);
+                    while (thisScanner.hasNextLine()) {
 
-				Scanner thisScanner;
+                        String line = thisScanner.nextLine();
 
-				try {
+                        line = line.replaceAll("\\(Shotgun\\) ", "");
+                        line = line.replaceAll("\\(No Huddle\\) ", "");
+                        line = line.replaceAll("\\(No Huddle, Shotgun\\) ", "");
+                        line = line.replaceAll("\\(Punt formation\\) ", "");
+                        line = line.replaceAll("Direct snap to ", "");
+                        line = line.replaceAll("\t", " ");
+                        line = line.replaceAll("  ", "");
+                        line = line.replaceAll(",", "");
+                        line = line.replaceAll("\\. ", ".");
+                        line = line.replaceAll("\\.", " ");
+                        bw.write(line + System.getProperty("line.separator"));
 
-					thisScanner = new Scanner(game);
+                    }
 
-					while (thisScanner.hasNextLine()) {
+                    thisScanner.close();
 
-						String line = thisScanner.nextLine();
+                    bw.close();
 
-						line = line.replaceAll("\\(Shotgun\\) ", "");
-						line = line.replaceAll("\\(No Huddle\\) ", "");
-						line = line.replaceAll("\\(No Huddle, Shotgun\\) ", "");
-						line = line.replaceAll("\\(Punt formation\\) ", "");
-						line = line.replaceAll("Direct snap to ", "");
-						line = line.replaceAll("\t", " ");
-						line = line.replaceAll("  ", "");
-						line = line.replaceAll(",", "");
-						line = line.replaceAll("\\. ", ".");
-						line = line.replaceAll("\\.", " ");
-						bw.write(line + "\n");
+                } catch (FileNotFoundException e) {
 
-					}
+                    e.printStackTrace();
 
-					thisScanner.close();
+                }
 
-					bw.close();
+            } catch (IOException e) {
 
-				} catch (FileNotFoundException e) {
+                e.printStackTrace();
 
-					e.printStackTrace();
+            }
 
-				}
+            if (rawGamesDirectory != null)
+                game.renameTo(new File(rawGamesDirectory.getPath() + System.getProperty("file.separator")
+                        + gameFile));
 
-			} catch (IOException e) {
+        }
+    }
 
-				e.printStackTrace();
+    public void readInData() {
 
-			}
+        qbs = new ArrayList<String>();
+        rbs = new ArrayList<String>();
 
-			if (rawGamesDirectory != null)
-				game.renameTo(new File(rawGamesDirectory.getPath() + "/"
-						+ gameFile));
+        File folder = new File(cleanedGames);
+        File[] gameFiles = folder.listFiles();
 
-		}
-	}
+        numberDrives = 0;
 
-	public void readInData() {
+        File resultsDirectory = new File(folder.getParent() + System.getProperty("file.separator") + "Results");
+        if (!resultsDirectory.exists())
+            resultsDirectory.mkdir();
 
-		qbs = new ArrayList<String>();
-		rbs = new ArrayList<String>();
+        data = new File(resultsDirectory.getPath() + System.getProperty("file.separator") + "RawData.csv");
 
-		File folder = new File(cleanedGames);
-		File[] gameFiles = folder.listFiles();
+        try {
 
-		numberDrives = 0;
+            data.createNewFile();
 
-		File resultsDirectory = new File(folder.getParent() + "/Results");
-		if (!resultsDirectory.exists())
-			resultsDirectory.mkdir();
+            fw = new FileWriter(data.getAbsoluteFile());
+            bw = new BufferedWriter(fw);
 
-		data = new File(resultsDirectory.getPath() + "/RawData.csv");
+            for (File game : gameFiles) {
 
-		try {
+                opponent = game.getName();
 
-			data.createNewFile();
+                try {
 
-			fw = new FileWriter(data.getAbsoluteFile());
-			bw = new BufferedWriter(fw);
+                    scanner = new Scanner(game);
 
-			for (File game : gameFiles) {
+                    while (scanner.hasNextLine()) {
 
-				opponent = game.getName();
+                        line = scanner.nextLine();
 
-				try {
+                        if (line.contains(homeTeam)) {
 
-					scanner = new Scanner(game);
+                            homeTeamDrive();
+                            continue;
 
-					while (scanner.hasNextLine()) {
+                        }
 
-						line = scanner.nextLine();
+                        if (line.contains(opponent)) {
 
-						if (line.contains(homeTeam)) {
+                            opponentDrive();
+                            continue;
 
-							homeTeamDrive();
-							continue;
+                        }
 
-						}
+                        playCall = new ArrayList<String>();
+                        Collections.addAll(playCall, line.split(" "));
 
-						if (line.contains(opponent)) {
+                        if (playCall.get(1).equals("Quarter"))
+                            currentQuarter = playCall.get(0);
 
-							opponentDrive();
-							continue;
+                    }
 
-						}
+                } catch (FileNotFoundException e) {
 
-						playCall = new ArrayList<String>();
-						Collections.addAll(playCall, line.split(" "));
+                    e.printStackTrace();
 
-						if (playCall.get(1).equals("Quarter"))
-							currentQuarter = playCall.get(0);
+                }
+            }
 
-					}
+            bw.close();
 
-				} catch (FileNotFoundException e) {
+        } catch (IOException e) {
 
-					e.printStackTrace();
+            e.printStackTrace();
 
-				}
-			}
+        }
+    }
 
-			bw.close();
+    public void homeTeamDrive() {
 
-		} catch (IOException e) {
+        while (scanner.hasNextLine()) {
 
-			e.printStackTrace();
+            line = scanner.nextLine();
 
-		}
-	}
+            if (line.contains("DRIVE TOTALS")
+                    || line.contains("End of 4th Quarter")) {
 
-	public void homeTeamDrive() {
+                numberDrives++;
+                return;
 
-		while (scanner.hasNextLine()) {
+            }
 
-			line = scanner.nextLine();
+            if (line.contains(opponent)) {
 
-			if (line.contains("DRIVE TOTALS")
-					|| line.contains("End of 4th Quarter")) {
+                opponentDrive();
+                return;
 
-				numberDrives++;
-				return;
+            }
 
-			}
+            playCall = new ArrayList<String>();
+            Collections.addAll(playCall, line.split(" "));
 
-			if (line.contains(opponent)) {
+            if (specialCircumstances(line)) {
 
-				opponentDrive();
-				return;
+                if (playCall.get(1).equals("Quarter"))
+                    currentQuarter = playCall.get(0);
+                continue;
 
-			}
+            }
 
-			playCall = new ArrayList<String>();
-			Collections.addAll(playCall, line.split(" "));
+            if (playCall.size() < 8)
+                continue;
 
-			if (specialCircumstances(line)) {
+            printPlay();
 
-				if (playCall.get(1).equals("Quarter"))
-					currentQuarter = playCall.get(0);
-				continue;
+        }
+    }
 
-			}
+    public void opponentDrive() {
 
-			if (playCall.size() < 8)
-				continue;
+        while (scanner.hasNextLine()) {
 
-			printPlay();
+            line = scanner.nextLine();
 
-		}
-	}
+            if (line.contains("DRIVE TOTALS")
+                    || line.contains("End of 4th Quarter"))
+                return;
 
-	public void opponentDrive() {
+            if (line.contains(homeTeam)) {
 
-		while (scanner.hasNextLine()) {
+                homeTeamDrive();
+                return;
 
-			line = scanner.nextLine();
+            }
 
-			if (line.contains("DRIVE TOTALS")
-					|| line.contains("End of 4th Quarter"))
-				return;
+            playCall = new ArrayList<String>();
+            Collections.addAll(playCall, line.split(" "));
 
-			if (line.contains(homeTeam)) {
+            if (playCall.size() < 5)
+                continue;
 
-				homeTeamDrive();
-				return;
+            if (playCall.get(1).equals("Quarter"))
+                currentQuarter = playCall.get(0);
 
-			}
+        }
+    }
 
-			playCall = new ArrayList<String>();
-			Collections.addAll(playCall, line.split(" "));
+    public boolean specialCircumstances(String line) {
 
-			if (playCall.size() < 5)
-				continue;
+        return (line.contains("penalty") || line.contains("PENALTY")
+                || line.contains("punt") || line.contains("kicks")
+                || line.contains("kickoff") || line.contains("extra")
+                || line.contains("TWO-POINT") || line.contains("fumbled")
+                || line.contains("FUMBLES") || line.contains("intercepted")
+                || line.contains("INTERCEPTED") || line.contains("Timeout")
+                || line.contains("Quarter") || line.contains("goal")
+                || line.contains("ball on") || line.contains("Start of"))
+                || line.contains("coin");
 
-			if (playCall.get(1).equals("Quarter"))
-				currentQuarter = playCall.get(0);
+    }
 
-		}
-	}
+    public void printPlay() {
 
-	public boolean specialCircumstances(String line) {
+        String down = playCall.get(0);
+        String distance = playCall.get(2);
+        String sideOfField = playCall.get(4);
+        String spotOnField = playCall.get(5);
+        String playerFirst = playCall.get(6);
+        if (playerFirst.length() > 1)
+            playerFirst = playerFirst.substring(0, 1);
+        String playerLast = playCall.get(7);
+        String player = playerFirst + " " + playerLast;
 
-		return (line.contains("penalty") || line.contains("PENALTY")
-				|| line.contains("punt") || line.contains("kicks")
-				|| line.contains("kickoff") || line.contains("extra")
-				|| line.contains("TWO-POINT") || line.contains("fumbled")
-				|| line.contains("FUMBLES") || line.contains("intercepted")
-				|| line.contains("INTERCEPTED") || line.contains("Timeout")
-				|| line.contains("Quarter") || line.contains("goal")
-				|| line.contains("ball on") || line.contains("Start of"))
-				|| line.contains("coin");
+        if (sideOfField.equals("50")) {
 
-	}
+            spotOnField = playCall.get(4);
+            playerFirst = playCall.get(5);
+            if (playerFirst.length() > 1)
+                playerFirst = playerFirst.substring(0, 1);
+            playerLast = playCall.get(6);
+            player = playerFirst + " " + playerLast;
 
-	public void printPlay() {
+        }
 
-		String down = playCall.get(0);
-		String distance = playCall.get(2);
-		String sideOfField = playCall.get(4);
-		String spotOnField = playCall.get(5);
-		String playerFirst = playCall.get(6);
-		if (playerFirst.length() > 1)
-			playerFirst = playerFirst.substring(0, 1);
-		String playerLast = playCall.get(7);
-		String player = playerFirst + " " + playerLast;
+        String play;
 
-		if (sideOfField.equals("50")) {
+        if (line.contains("sacked") || line.contains("pass")
+                || line.contains("scramble")) {
 
-			spotOnField = playCall.get(4);
-			playerFirst = playCall.get(5);
-			if (playerFirst.length() > 1)
-				playerFirst = playerFirst.substring(0, 1);
-			playerLast = playCall.get(6);
-			player = playerFirst + " " + playerLast;
+            play = "Pass";
+            if (!qbs.contains(player))
+                qbs.add(player);
 
-		}
+        } else {
 
-		String play;
+            play = "Rush";
+            if (!rbs.contains(player))
+                rbs.add(player);
 
-		if (line.contains("sacked") || line.contains("pass")
-				|| line.contains("scramble")) {
+        }
 
-			play = "Pass";
-			if (!qbs.contains(player))
-				qbs.add(player);
+        if (distance.equals("Goal"))
+            distance = spotOnField;
 
-		} else {
+        int yards = 0;
 
-			play = "Rush";
-			if (!rbs.contains(player))
-				rbs.add(player);
+        if (line.contains("yards"))
+            yards = Integer
+                    .parseInt(playCall.get(playCall.indexOf("yards") - 1));
 
-		}
+        else if (line.contains("1 yard"))
+            yards = 1;
 
-		if (distance.equals("Goal"))
-			distance = spotOnField;
+        if (line.contains("loss"))
+            yards *= -1;
 
-		int yards = 0;
+        try {
 
-		if (line.contains("yards"))
-			yards = Integer
-					.parseInt(playCall.get(playCall.indexOf("yards") - 1));
+            bw.write(opponent + "," + currentQuarter + "," + down + ","
+                    + distance + "," + sideOfField + "," + spotOnField + ","
+                    + playerFirst + "," + playerLast + "," + play + "," + yards
+                    + System.getProperty("line.separator"));
 
-		else if (line.contains("1 yard"))
-			yards = 1;
+        } catch (IOException e) {
 
-		if (line.contains("loss"))
-			yards *= -1;
+            e.printStackTrace();
 
-		try {
-
-			bw.write(opponent + "," + currentQuarter + "," + down + ","
-					+ distance + "," + sideOfField + "," + spotOnField + ","
-					+ playerFirst + "," + playerLast + "," + play + "," + yards
-					+ "\n");
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-	}
+        }
+    }
 }

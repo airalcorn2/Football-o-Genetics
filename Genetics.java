@@ -27,7 +27,7 @@ public class Genetics {
 
     String rootDir;
     Hashtable<String, Double> interception, fumble;
-    File data, intData, fumbleData, strategy;
+    File data, intData, fumbleData;
     Hashtable<String, String> playerA, playerB;
     Hashtable<String, Hashtable<String, ArrayList<Integer>>> downDistanceStats,
             allStats;
@@ -35,6 +35,8 @@ public class Genetics {
     boolean useDistance;
     double mutateProb = 0.01;
     ArrayList<Double> maxFitness;
+    ArrayList<double[]> population;
+    // double[] absoluteFitness; // Necessary for multi-threaded implementation
     ArrayList<Hashtable<String, Double>> maxRunProb, maxPlayerAProb;
     Hashtable<String, Double> observedRunProb, observedPlayerAProb;
 
@@ -104,7 +106,7 @@ public class Genetics {
                 } catch (NumberFormatException e) {
 
                     System.out.println("\"" + components[9] + "\" is in the " +
-                            "yards column, but is not an integer");
+                            "yards column, but it is not an integer");
                     throw e;
 
                 }
@@ -239,6 +241,7 @@ public class Genetics {
         }
     }
 
+    // Is not multi-threaded, but seems faster
     public void doGeneticAlgorithm() {
 
         maxFitness = new ArrayList<Double>();
@@ -247,10 +250,12 @@ public class Genetics {
 
         ArrayList<double[]> population = createInitialPopulation();
 
-        // Number of generations to evolve
+        // Evolve the population for the predetermined number of generations
         for (int currentGen = 0; currentGen < generations; currentGen++) {
 
-            // Keeps track of the fitness of each individual in the population
+            System.out.println("Generation: " + (currentGen + 1));
+
+            // Keeps track of each individual's fitness
             ArrayList<Double> absoluteFitness = new ArrayList<Double>();
 
             // Calculate the fitness for each individual
@@ -328,11 +333,86 @@ public class Genetics {
                 newPopulation.add(child);
 
             }
-
             population = newPopulation;
-
         }
     }
+
+    // Is multi-threaded - not faster
+    /*public void doGeneticAlgorithm() {
+
+        maxFitness = new ArrayList<Double>();
+        maxRunProb = new ArrayList<Hashtable<String, Double>>();
+        maxPlayerAProb = new ArrayList<Hashtable<String, Double>>();
+
+        population = createInitialPopulation();
+
+        // Evolve the population for the predetermined number of generations
+        for (int currentGen = 0; currentGen < generations; currentGen++) {
+
+            System.out.println("Generation: " + (currentGen + 1));
+
+            // Keeps track of each individual's fitness
+            absoluteFitness = new double[population.size()];
+
+            // Calculate the fitness for each individual using multiple threads
+            IndividualFitness one = new IndividualFitness(0);
+            IndividualFitness two = new IndividualFitness(1);
+            IndividualFitness three = new IndividualFitness(2);
+            IndividualFitness four = new IndividualFitness(3);
+
+            one.start();
+            two.start();
+            three.start();
+            four.start();
+
+            while (one.isAlive() || two.isAlive() || three.isAlive() || four.isAlive())
+                continue;
+
+            // Assign each individual a probability of reproduction based on its
+            // relative fitness.
+            double totalFitness = 0.0;
+            for (Double individualFitness : absoluteFitness)
+                totalFitness += individualFitness;
+
+            ArrayList<Double> fitnessProb = new ArrayList<Double>();
+            double cumulativeFitnessProb = 0.0;
+
+            for (double thisFitness : absoluteFitness) {
+
+                cumulativeFitnessProb += thisFitness / totalFitness;
+                fitnessProb.add(cumulativeFitnessProb);
+
+            }
+
+            // Mate individuals in the population with a probability
+            // proportional to their relative fitness values.
+            ArrayList<double[]> newPopulation = new ArrayList<double[]>();
+
+            for (int i = 0; i < population.size(); i++) {
+
+                double individualA = Math.random();
+                int indexA = 0;
+                while (individualA > fitnessProb.get(indexA))
+                    indexA++;
+                double[] parentA = population.get(indexA);
+
+                double individualB = Math.random();
+                int indexB = 0;
+                while (individualB > fitnessProb.get(indexB))
+                    indexB++;
+                double[] parentB = population.get(indexB);
+
+                double[] child = reproduce(parentA, parentB);
+
+                if (Math.random() < mutateProb)
+                    child = mutate(child);
+
+                newPopulation.add(child);
+
+            }
+            population = newPopulation;
+        }
+    }*/
 
     // Create a population of individuals with randomly initialized genes.
     public ArrayList<double[]> createInitialPopulation() {
@@ -369,7 +449,6 @@ public class Genetics {
             population.add(parameters);
 
         }
-
         return population;
     }
 
@@ -516,9 +595,7 @@ public class Genetics {
 
             }
         }
-
         return false;
-
     }
 
     String getDownString(int down) {
@@ -531,7 +608,6 @@ public class Genetics {
             return "3rd";
 
         return "";
-
     }
 
     String getDistanceString(int down, int distance) {
@@ -549,9 +625,7 @@ public class Genetics {
 
             }
         }
-
         return "";
-
     }
 
     String getPlay(Hashtable<String, Double> downDistanceRunProb,
@@ -562,7 +636,6 @@ public class Genetics {
             return "Rush";
         else
             return "Pass";
-
     }
 
     String getPosition(String play) {
@@ -571,7 +644,6 @@ public class Genetics {
             return "RB";
         else
             return "QB";
-
     }
 
     String getPlayer(String pos, String fullKey,
@@ -582,7 +654,6 @@ public class Genetics {
             return playerA.get(pos);
         else
             return playerB.get(pos);
-
     }
 
     int getYards(String fullKey, String player, String play) {
@@ -600,7 +671,6 @@ public class Genetics {
 
         int index = new Random().nextInt(playerYards.size());
         return playerYards.get(index);
-
     }
 
     public double findFitness(Hashtable<String, Double> downDistanceRunProb,
@@ -612,7 +682,6 @@ public class Genetics {
             if (drive(downDistanceRunProb, downDistancePlayPlayerAProb)) TD++;
 
         return (double) TD / (double) trials;
-
     }
 
     public double[] reproduce(double[] parentA, double[] parentB) {
@@ -634,7 +703,6 @@ public class Genetics {
             thisChild[j] = child.get(j);
 
         return thisChild;
-
     }
 
     public double[] mutate(double[] child) {
@@ -643,7 +711,6 @@ public class Genetics {
         int index = rand.nextInt(child.length);
         child[index] = Math.random();
         return child;
-
     }
 
     public void getObservedRunProb() {
@@ -652,64 +719,33 @@ public class Genetics {
 
         Hashtable<String, Integer> downDistanceRunPassTotals = new Hashtable<String, Integer>();
 
-        if (strategy != null) {
+        for (String stats : downDistanceStats.keySet()) {
 
-            Scanner csv;
+            int totalPlays = 0;
 
-            try {
+            for (String player : downDistanceStats.get(stats).keySet())
+                totalPlays += downDistanceStats.get(stats).get(player)
+                        .size();
 
-                csv = new Scanner(strategy);
+            downDistanceRunPassTotals.put(stats, totalPlays);
+        }
 
-                String[] runKeys = (String[]) maxRunProb.get(0).keySet()
-                        .toArray();
-                Arrays.sort(runKeys);
+        for (String rushStats : downDistanceStats.keySet()) {
 
-                for (String runKey : runKeys) {
+            if (rushStats.contains("Rush")) {
 
-                    double runProb = Double.parseDouble(csv.nextLine());
-                    observedRunProb.put(runKey, runProb);
+                int rushIndex = rushStats.indexOf("Rush");
+                String passStats = rushStats.substring(0, rushIndex)
+                        + "Pass";
 
-                }
+                double runProb = (double) downDistanceRunPassTotals
+                        .get(rushStats)
+                        / ((double) downDistanceRunPassTotals
+                        .get(rushStats) + (double) downDistanceRunPassTotals
+                        .get(passStats));
+                String downDist = rushStats.substring(0, rushIndex);
+                observedRunProb.put(downDist, runProb);
 
-            } catch (FileNotFoundException e) {
-
-                e.printStackTrace();
-
-            }
-
-        } else {
-
-            for (String stats : downDistanceStats.keySet()) {
-
-                int totalPlays = 0;
-
-                for (String player : downDistanceStats.get(stats).keySet()) {
-
-                    totalPlays += downDistanceStats.get(stats).get(player)
-                            .size();
-
-                }
-
-                downDistanceRunPassTotals.put(stats, totalPlays);
-            }
-
-            for (String rushStats : downDistanceStats.keySet()) {
-
-                if (rushStats.contains("Rush")) {
-
-                    int rushIndex = rushStats.indexOf("Rush");
-                    String passStats = rushStats.substring(0, rushIndex)
-                            + "Pass";
-
-                    double runProb = (double) downDistanceRunPassTotals
-                            .get(rushStats)
-                            / ((double) downDistanceRunPassTotals
-                            .get(rushStats) + (double) downDistanceRunPassTotals
-                            .get(passStats));
-                    String downDist = rushStats.substring(0, rushIndex);
-                    observedRunProb.put(downDist, runProb);
-
-                }
             }
         }
     }
@@ -759,12 +795,12 @@ public class Genetics {
 
     public void printResults() {
 
-        File resultsDirectory = new File(rootDir + "/Results");
+        File resultsDirectory = new File(rootDir + System.getProperty("file.separator") + "Results");
         if (!resultsDirectory.exists())
             resultsDirectory.mkdir();
 
         File data = new File(resultsDirectory.getPath()
-                + "/OptimizationResults.csv");
+                + System.getProperty("file.separator") + "OptimizationResults.csv");
         try {
 
             data.createNewFile();
@@ -786,7 +822,7 @@ public class Genetics {
             for (String runKey : runKeys)
                 bw.write(runKey + ",");
 
-            bw.write("\n");
+            bw.write(System.getProperty("line.separator"));
 
             double observedFitness = findFitness(observedRunProb,
                     observedPlayerAProb);
@@ -810,7 +846,7 @@ public class Genetics {
             for (String runKey : runKeys)
                 bw.write(observedRunProb.get(runKey) + ",");
 
-            bw.write("\n");
+            bw.write(System.getProperty("line.separator"));
 
             for (int i = 0; i < maxFitness.size(); i++) {
 
@@ -823,7 +859,7 @@ public class Genetics {
                 for (String runKey : runKeys)
                     bw.write(maxRunProb.get(i).get(runKey) + ",");
 
-                bw.write("\n");
+                bw.write(System.getProperty("line.separator"));
             }
 
             bw.close();
@@ -833,7 +869,6 @@ public class Genetics {
             e.printStackTrace();
 
         }
-
     }
 
     public void runAnalysis() {
@@ -848,4 +883,55 @@ public class Genetics {
         printResults();
 
     }
+
+    // Necessary for multi-threaded implementation
+    /*class IndividualFitness extends Thread {
+
+        int id;
+
+        public IndividualFitness(int thisId) {
+            id = thisId;
+        }
+
+        public void run() {
+
+            int index = id * (population.size() / 4);
+            int end = index + population.size() / 4;
+            if (id == 3) end = population.size();
+
+            for (; index < end; index++) {
+
+                double[] individual = population.get(index);
+
+                ArrayList<Hashtable<String, Double>> individualParameters = fillInProbs(individual);
+
+                double individualFitness = findFitness(
+                        individualParameters.get(0),
+                        individualParameters.get(1));
+
+                if (maxFitness.size() < 10) {
+
+                    maxFitness.add(individualFitness);
+                    maxRunProb.add(individualParameters.get(0));
+                    maxPlayerAProb.add(individualParameters.get(1));
+
+                } else if (individualFitness > Collections.min(maxFitness)) {
+
+                    int minIndex = maxFitness.indexOf(Collections
+                            .min(maxFitness));
+
+                    maxFitness.remove(minIndex);
+                    maxRunProb.remove(minIndex);
+                    maxPlayerAProb.remove(minIndex);
+
+                    maxFitness.add(individualFitness);
+                    maxRunProb.add(individualParameters.get(0));
+                    maxPlayerAProb.add(individualParameters.get(1));
+
+                }
+
+                absoluteFitness[index] = individualFitness;
+            }
+        }
+    }*/
 }

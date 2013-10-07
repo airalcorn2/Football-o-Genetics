@@ -38,16 +38,14 @@ public class GeneticGUI extends JFrame {
     private JFileChooser fileChooser;
     private JTextField generationsTextField;
     private JTextField popTextField;
-    private JComboBox<String> qb1ComboBox;
-    private JComboBox<String> qb2ComboBox;
-    private JComboBox<String> rb1ComboBox;
-    private JComboBox<String> rb2ComboBox;
+    private JComboBox<String> qbAComboBox;
+    private JComboBox<String> qbBComboBox;
+    private JComboBox<String> rbAComboBox;
+    private JComboBox<String> rbBComboBox;
     private JTextField teamTextField;
 
     public GeneticGUI() {
-
         initComponents();
-
     }
 
     private void initComponents() {
@@ -57,22 +55,21 @@ public class GeneticGUI extends JFrame {
         drivesTextField = new JTextField();
         generationsTextField = new JTextField();
         JButton statsButton = new JButton();
-        qb1ComboBox = new JComboBox<String>();
-        qb2ComboBox = new JComboBox<String>();
-        rb1ComboBox = new JComboBox<String>();
-        rb2ComboBox = new JComboBox<String>();
-        JLabel qb1Label = new JLabel();
-        JLabel qb2Label = new JLabel();
+        qbAComboBox = new JComboBox<String>();
+        qbBComboBox = new JComboBox<String>();
+        rbAComboBox = new JComboBox<String>();
+        rbBComboBox = new JComboBox<String>();
+        JLabel qbALabel = new JLabel();
+        JLabel qbBLabel = new JLabel();
         JButton optimizeButton = new JButton();
-        JLabel rb1Label = new JLabel();
-        JLabel rb2Label = new JLabel();
+        JLabel rbALabel = new JLabel();
+        JLabel rbBLabel = new JLabel();
         teamTextField = new JTextField();
         popTextField = new JTextField();
         distanceCheckBox = new JCheckBox();
         JButton openFumbleButton = new JButton();
         JButton clearButton = new JButton();
         JButton openIntButton = new JButton();
-        JButton strategyButton = new JButton();
         JButton openRawDataButton = new JButton();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -116,20 +113,20 @@ public class GeneticGUI extends JFrame {
             }
         });
 
-        qb1Label.setText("QB A");
-        qb1ComboBox.setModel(new DefaultComboBoxModel<String>(
+        qbALabel.setText("QB A");
+        qbAComboBox.setModel(new DefaultComboBoxModel<String>(
                 new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
 
-        qb2Label.setText("QB B");
-        qb2ComboBox.setModel(new DefaultComboBoxModel<String>(
+        qbBLabel.setText("QB B");
+        qbBComboBox.setModel(new DefaultComboBoxModel<String>(
                 new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
 
-        rb1Label.setText("RB A");
-        rb1ComboBox.setModel(new DefaultComboBoxModel<String>(
+        rbALabel.setText("RB A");
+        rbAComboBox.setModel(new DefaultComboBoxModel<String>(
                 new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
 
-        rb2Label.setText("RB B");
-        rb2ComboBox.setModel(new DefaultComboBoxModel<String>(
+        rbBLabel.setText("RB B");
+        rbBComboBox.setModel(new DefaultComboBoxModel<String>(
                 new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
 
         drivesTextField.setText("Drives");
@@ -144,13 +141,6 @@ public class GeneticGUI extends JFrame {
         optimizeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 optimizeButtonActionPerformed();
-            }
-        });
-
-        strategyButton.setText("Provide Strategy");
-        strategyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                strategyButtonActionPerformed();
             }
         });
 
@@ -223,22 +213,22 @@ public class GeneticGUI extends JFrame {
                                                                         layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.TRAILING)
                                                                                 .addComponent(
-                                                                                        qb1Label)
+                                                                                        qbALabel)
                                                                                 .addComponent(
-                                                                                        qb2Label))
+                                                                                        qbBLabel))
                                                                 .addPreferredGap(
                                                                         LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(
                                                                         layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.TRAILING)
                                                                                 .addComponent(
-                                                                                        qb1ComboBox,
+                                                                                        qbAComboBox,
                                                                                         GroupLayout.Alignment.LEADING,
                                                                                         0,
                                                                                         GroupLayout.DEFAULT_SIZE,
                                                                                         Short.MAX_VALUE)
                                                                                 .addComponent(
-                                                                                        qb2ComboBox,
+                                                                                        qbBComboBox,
                                                                                         GroupLayout.Alignment.LEADING,
                                                                                         0,
                                                                                         GroupLayout.DEFAULT_SIZE,
@@ -251,30 +241,24 @@ public class GeneticGUI extends JFrame {
                                                                         layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.LEADING)
                                                                                 .addComponent(
-                                                                                        rb2Label)
+                                                                                        rbBLabel)
                                                                                 .addComponent(
-                                                                                        rb1Label))
+                                                                                        rbALabel))
                                                                 .addPreferredGap(
                                                                         LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(
                                                                         layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.LEADING)
                                                                                 .addComponent(
-                                                                                        rb1ComboBox,
+                                                                                        rbAComboBox,
                                                                                         0,
                                                                                         GroupLayout.DEFAULT_SIZE,
                                                                                         Short.MAX_VALUE)
                                                                                 .addComponent(
-                                                                                        rb2ComboBox,
+                                                                                        rbBComboBox,
                                                                                         0,
                                                                                         GroupLayout.DEFAULT_SIZE,
                                                                                         Short.MAX_VALUE)))
-                                                .addComponent(
-                                                        strategyButton,
-                                                        GroupLayout.Alignment.LEADING,
-                                                        GroupLayout.DEFAULT_SIZE,
-                                                        GroupLayout.DEFAULT_SIZE,
-                                                        Short.MAX_VALUE)
                                                 .addComponent(
                                                         clearButton,
                                                         GroupLayout.Alignment.LEADING,
@@ -350,44 +334,44 @@ public class GeneticGUI extends JFrame {
                                         layout.createParallelGroup(
                                                 GroupLayout.Alignment.BASELINE)
                                                 .addComponent(
-                                                        qb1ComboBox,
+                                                        qbAComboBox,
                                                         GroupLayout.PREFERRED_SIZE,
                                                         GroupLayout.DEFAULT_SIZE,
                                                         GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(qb1Label))
+                                                .addComponent(qbALabel))
                                 .addPreferredGap(
                                         LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(
                                         layout.createParallelGroup(
                                                 GroupLayout.Alignment.BASELINE)
                                                 .addComponent(
-                                                        qb2ComboBox,
+                                                        qbBComboBox,
                                                         GroupLayout.PREFERRED_SIZE,
                                                         GroupLayout.DEFAULT_SIZE,
                                                         GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(qb2Label))
+                                                .addComponent(qbBLabel))
                                 .addPreferredGap(
                                         LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(
                                         layout.createParallelGroup(
                                                 GroupLayout.Alignment.BASELINE)
                                                 .addComponent(
-                                                        rb1ComboBox,
+                                                        rbAComboBox,
                                                         GroupLayout.PREFERRED_SIZE,
                                                         GroupLayout.DEFAULT_SIZE,
                                                         GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(rb1Label))
+                                                .addComponent(rbALabel))
                                 .addPreferredGap(
                                         LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(
                                         layout.createParallelGroup(
                                                 GroupLayout.Alignment.BASELINE)
                                                 .addComponent(
-                                                        rb2ComboBox,
+                                                        rbBComboBox,
                                                         GroupLayout.PREFERRED_SIZE,
                                                         GroupLayout.DEFAULT_SIZE,
                                                         GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(rb2Label))
+                                                .addComponent(rbBLabel))
                                 .addPreferredGap(
                                         LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(
@@ -415,9 +399,6 @@ public class GeneticGUI extends JFrame {
                                 .addComponent(optimizeButton)
                                 .addPreferredGap(
                                         LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(strategyButton)
-                                .addPreferredGap(
-                                        LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(clearButton).addContainerGap()));
 
         this.setResizable(false);
@@ -429,60 +410,44 @@ public class GeneticGUI extends JFrame {
 
         int returnVal = fileChooser.showOpenDialog(this);
 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
+        if (returnVal == JFileChooser.APPROVE_OPTION)
             intFile = fileChooser.getSelectedFile();
-
-        } else {
-
+        else
             System.out.println("File access cancelled by user.");
 
-        }
     }
 
     private void openFumbleButtonActionPerformed() {
 
         int returnVal = fileChooser.showOpenDialog(this);
 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
+        if (returnVal == JFileChooser.APPROVE_OPTION)
             fumbleFile = fileChooser.getSelectedFile();
-
-        } else {
-
+        else
             System.out.println("File access cancelled by user.");
 
-        }
     }
 
     private void openDirectoryButtonActionPerformed() {
 
         int returnVal = fileChooser.showOpenDialog(this);
 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
+        if (returnVal == JFileChooser.APPROVE_OPTION)
             gamesDirectory = fileChooser.getSelectedFile();
-
-        } else {
-
+        else
             System.out.println("File access cancelled by user.");
 
-        }
     }
 
     private void openRawDataButtonActionPerformed() {
 
         int returnVal = fileChooser.showOpenDialog(this);
 
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-
+        if (returnVal == JFileChooser.APPROVE_OPTION)
             rawData = fileChooser.getSelectedFile();
-
-        } else {
-
+        else
             System.out.println("File access cancelled by user.");
 
-        }
     }
 
     private void statsButtonActionPerformed() {
@@ -499,7 +464,6 @@ public class GeneticGUI extends JFrame {
         }
 
         fillInPlayerComboBoxes();
-
     }
 
     void fillInPlayerComboBoxes() {
@@ -525,9 +489,9 @@ public class GeneticGUI extends JFrame {
                 theseQbs[i] = qbs.get(i);
             theseQbs[qbs.size()] = "None";
 
-            qb1ComboBox.setModel(new DefaultComboBoxModel<String>(
+            qbAComboBox.setModel(new DefaultComboBoxModel<String>(
                     theseQbs));
-            qb2ComboBox.setModel(new DefaultComboBoxModel<String>(
+            qbBComboBox.setModel(new DefaultComboBoxModel<String>(
                     theseQbs));
 
         } catch (FileNotFoundException e) {
@@ -557,9 +521,9 @@ public class GeneticGUI extends JFrame {
                 theseRbs[i] = rbs.get(i);
             theseRbs[rbs.size()] = "None";
 
-            rb1ComboBox.setModel(new DefaultComboBoxModel<String>(
+            rbAComboBox.setModel(new DefaultComboBoxModel<String>(
                     theseRbs));
-            rb2ComboBox.setModel(new DefaultComboBoxModel<String>(
+            rbBComboBox.setModel(new DefaultComboBoxModel<String>(
                     theseRbs));
 
         } catch (FileNotFoundException e) {
@@ -567,7 +531,6 @@ public class GeneticGUI extends JFrame {
             e.printStackTrace();
 
         }
-
     }
 
     private void optimizeButtonActionPerformed() {
@@ -591,14 +554,14 @@ public class GeneticGUI extends JFrame {
         evolve.fumbleData = fumbleFile;
 
         evolve.playerA = new Hashtable<String, String>();
-        evolve.playerA.put("QB", (String) qb1ComboBox.getSelectedItem());
-        evolve.playerA.put("RB", (String) rb1ComboBox.getSelectedItem());
+        evolve.playerA.put("QB", (String) qbAComboBox.getSelectedItem());
+        evolve.playerA.put("RB", (String) rbAComboBox.getSelectedItem());
         evolve.playerB = new Hashtable<String, String>();
 
-        if (qb2ComboBox.getSelectedItem() != "None")
-            evolve.playerB.put("QB", (String) qb2ComboBox.getSelectedItem());
-        if (rb2ComboBox.getSelectedItem() != "None")
-            evolve.playerB.put("RB", (String) rb2ComboBox.getSelectedItem());
+        if (qbBComboBox.getSelectedItem() != "None")
+            evolve.playerB.put("QB", (String) qbBComboBox.getSelectedItem());
+        if (rbBComboBox.getSelectedItem() != "None")
+            evolve.playerB.put("RB", (String) rbBComboBox.getSelectedItem());
 
         evolve.generations = Integer.parseInt(generationsTextField.getText());
         evolve.popSize = Integer.parseInt(popTextField.getText());
@@ -608,6 +571,18 @@ public class GeneticGUI extends JFrame {
 
         evolve.runAnalysis();
 
+        JFrame complete = new JFrame();
+
+        JPanel stuff = new JPanel();
+        JLabel label = new JLabel("Optimization complete!", JLabel.CENTER);
+        stuff.add(label);
+
+        complete.add(stuff);
+        complete.setLocationRelativeTo(null);
+        complete.pack();
+        complete.setSize(300, 100);
+        complete.setVisible(true);
+
     }
 
     private void clearButtonActionPerformed() {
@@ -615,9 +590,5 @@ public class GeneticGUI extends JFrame {
         this.dispose();
         new GeneticGUI().setVisible(true);
 
-    }
-
-    private void strategyButtonActionPerformed() {
-        // TODO add your handling code here:
     }
 }
