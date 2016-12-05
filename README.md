@@ -1,2 +1,2 @@
 # Football-o-Genetics
-An application for "evolving" near-optimal offensive play calling strategies. https://sites.google.com/site/michaelaalcorn/Football-o-Genetics
+Football-o-Genetics is an application for "evolving" near-optimal offensive play calling strategies. The application incorporates ideas from both artificial intelligence (specifically, genetic algorithms) and advanced statistics (in the form of a Markov model of an offensive drive) to accomplish this end. For an in-depth (i.e., academic) discussion of the methods used in Football-o-Genetics (in addition to an example analysis), please read the white paper posted below.
