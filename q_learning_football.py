@@ -207,7 +207,7 @@ def q_learning(data, turnovers):
             if distance <= 0:
                 down = 1
                 if field > 90:
-                    distance = 10 - field
+                    distance = 100 - field
                 else:
                     distance = 10
             
