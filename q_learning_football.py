@@ -1,7 +1,10 @@
 # Michael A. Alcorn
 
 import csv
+import matplotlib.pyplot as plt
+import numpy as np
 import random
+import seaborn as sns
 
 
 def get_turnover_rates(turnover_f):
@@ -31,7 +34,7 @@ def get_stats(keep_players):
     turnovers = {"Pass": interceptions, "Rush": fumbles}
     
     fieldnames = ["opponent", "quarter", "down", "distance", "side_of_field", "yard_line", "first_initial", "last_name", "play", "yards"]
-    reader = csv.DictReader(open("Results/RawData.csv"), fieldnames = fieldnames)
+    reader = csv.DictReader(open("RawData.csv"), fieldnames = fieldnames)
     
     data = {}
     down_distance_data = {}
@@ -142,7 +145,7 @@ def get_epsilon_greedy_action(epsilon, Q_actions):
         return random.choice(list(Q_actions.keys()))
 
 
-def q_learning(data, turnovers):
+def run_q_learning(data, turnovers):
     """Run Q-learning algorithm.
     
     :param data: 
@@ -175,7 +178,7 @@ def q_learning(data, turnovers):
         
         down = 1
         distance = 10
-        field = 27
+        field = random.randint(1, 50)
         
         while down <= 3:
             
@@ -196,8 +199,12 @@ def q_learning(data, turnovers):
             
             yards = random.choice(data[key][player])
             field += yards
-            # Touchdown!
             if field >= 100:
+                # Touchdown!
+                Q[state][action] = Q[state][action] + alpha * (1 + gamma * 0 - Q[state][action])
+                break
+            elif field <= 0:
+                # Safety.
                 Q[state][action] = Q[state][action] + alpha * (1 + gamma * 0 - Q[state][action])
                 break
             
@@ -227,10 +234,55 @@ def q_learning(data, turnovers):
     return Q
 
 
+def create_heat_maps(Q):
+    """Create heat maps representing Q values for different play calls.
+    
+    :param Q: 
+    """
+    all_actions = set()
+    for k in Q:
+        all_actions |= Q[k].keys()
+    
+    all_actions = list(all_actions)
+    action_to_idx = {action: i for (i, action) in enumerate(all_actions)}
+    for down in ["1st", "2nd", "3rd"]:
+        if down == "1st":
+            
+            mat = np.zeros((99, len(all_actions)))
+            for field in range(1, 100):
+                state = "{0}-{1}".format(field, down)
+                for action in action_to_idx:
+                    mat[99 - field][action_to_idx[action]] = Q[state].get(action, 0)
+            
+            plot = sns.heatmap(mat)
+            plot.set_title(down + " Down")
+            plot.set(yticklabels = [])
+            plot.set(xticklabels = all_actions)
+            plt.show()
+            
+        else:
+            
+            for distance_cat in ["Short", "Med", "Long"]:
+                
+                mat = np.zeros((99, len(all_actions)))
+                for field in range(1, 100):
+                    state = "{0}-{1}-{2}".format(field, down, distance_cat)
+                    for action in action_to_idx:
+                        mat[99 - field][action_to_idx[action]] = Q[state].get(action, 0)
+                
+                plot = sns.heatmap(mat)
+                plot.set_title("{0} Down and {1}".format(down, distance_cat))
+                plot.set(yticklabels = [])
+                plot.set(xticklabels = all_actions)
+                plt.show()
+
+
 def main():
     keep_players = set(["C Newton", "D Williams", "M Tolbert", "J Stewart"])
     (data, down_distance_data, turnovers) = get_stats(keep_players)
-    Q = q_learning(down_distance_data, turnovers)
+    Q = run_q_learning(down_distance_data, turnovers)
+    create_heat_maps(Q)
+
 
 if __name__ == "__main__":
     main()
