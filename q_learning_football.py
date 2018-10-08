@@ -205,7 +205,7 @@ def run_q_learning(data, turnovers):
                 break
             elif field <= 0:
                 # Safety.
-                Q[state][action] = Q[state][action] + alpha * (1 + gamma * 0 - Q[state][action])
+                Q[state][action] = Q[state][action] + alpha * (0 + gamma * 0 - Q[state][action])
                 break
             
             distance -= yards
